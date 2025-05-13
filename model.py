@@ -83,3 +83,38 @@ class FeedForwardBlock(nn.Module):
         x = torch.relu(self.layer_1(x))
         x = self.dropout(x)
         return self.layer_2(x)
+
+class MultiHeadAttentionBlock(nn.Module):
+
+    def __init__(self, d_model, num_heads, dropout):
+        super().__init__()
+        self.d_model = d_model
+        self.num_heads = num_heads
+        assert d_model % num_heads == 0, "d_model not divisble by num_heads"
+        
+        self.d_k = d_model // num_heads
+        self.w_q == nn.Linear(d_model, d_model)     # W_q
+        self.w_k == nn.Linear(d_model, d_model)     # W_k
+        self.w_v == nn.Linear(d_model, d_model)     # W_v
+        
+        self.w_o = nn.Linear(d_model, d_model)      # Wo
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, q, k, v, mask):
+        """
+        Inputs:
+            q: queries
+            k: keys
+            v: values
+            mask: mask the tokens ahead of the current token
+        """
+        query = self.w_q(q)         # (Batch, seq_len, d_model) --> (Batch, seq_len, d_model)
+        key = self.w_k(k)           # (Batch, seq_len, d_model) --> (Batch, seq_len, d_model)
+        value = self.w_v(v)         # (Batch, seq_len, d_model) --> (Batch, seq_len, d_model)
+
+        #  # (Batch, seq_len, d_model) --> (Batch, seq_len, num_heads, d_k) --> (Batch, num_heads, seq_len, d_k)
+        query = query.view(query.shape[0], query.shape[1], self.num_heads, self.d_k).transpose(1, 2)
+        key = query.view(key.shape[0], key.shape[1], self.num_heads, self.d_k).transpose(1, 2)
+        value = query.view(value.shape[0], value.shape[1], self.num_heads, self.d_k).transpose(1, 2)
+
+
