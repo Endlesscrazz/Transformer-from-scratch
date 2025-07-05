@@ -1,0 +1,15 @@
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # This mounts your local code into the container, so changes are reflected instantly
+      # without rebuilding the image. Great for development.
+      - ./translator_backend:/app
+    environment:
+      # If you need any environment variables, add them here
+      - PYTHONUNBUFFERED=1
